@@ -14,6 +14,7 @@ static bool_t buttonPressedFlag;
 static delay_t debounceDelay;
 static const int DEBOUNCE_DELAY = 40;
 
+// Private function prototypes
 static void ButtonPressed();
 static void ButtonReleased();
 static void DebounceErrorHandler(void);
@@ -21,7 +22,8 @@ static void DebounceErrorHandler(void);
 /**
  * @brief Initializes the finite state machine (FSM) for button debouncing.
  */
-void DebounceFSM_init(void) {
+void DebounceFSM_init(void)
+{
     currentState = BUTTON_UP;
     DelayInit(&debounceDelay, DEBOUNCE_DELAY);
     buttonPressedFlag = false;
@@ -32,39 +34,48 @@ void DebounceFSM_init(void) {
  * @brief Updates the state of the FSM by reading the button state and handling the transition logic.
  * Reads the current state of the button and performs state transitions based on the defined state diagram.
  */
-void DebounceFSM_update(void) {
+void DebounceFSM_update(void)
+{
     uint32_t currentButtonState = BSP_PB_GetState(BUTTON_USER);
 
-    switch (currentState) {
+    switch (currentState)
+    {
         case BUTTON_UP:
-            if (currentButtonState == GPIO_PIN_SET) {
+            if (currentButtonState == GPIO_PIN_SET)
+            {
                 currentState = BUTTON_FALLING;
                 DelayRead(&debounceDelay);
             }
             break;
         case BUTTON_FALLING:
-            if (DelayRead(&debounceDelay)) {
-                if (currentButtonState == GPIO_PIN_SET) {
+            if (DelayRead(&debounceDelay))
+            {
+                if (currentButtonState == GPIO_PIN_SET)
+                {
                     currentState = BUTTON_DOWN;
                     ButtonPressed();
                     buttonPressedFlag = true;
-                } else {
+                } else
+                {
                     currentState = BUTTON_UP;
                 }
             }
             break;
         case BUTTON_DOWN:
-            if (currentButtonState == GPIO_PIN_RESET) {
+            if (currentButtonState == GPIO_PIN_RESET)
+            {
                 currentState = BUTTON_RAISING;
                 DelayRead(&debounceDelay);
             }
             break;
         case BUTTON_RAISING:
-            if (DelayRead(&debounceDelay)) {
+            if (DelayRead(&debounceDelay))
+            {
                 if (currentButtonState == GPIO_PIN_RESET) {
                     currentState = BUTTON_UP;
                     ButtonReleased();
-                } else {
+                } else
+                {
                     currentState = BUTTON_DOWN;
                 }
             }
@@ -79,8 +90,10 @@ void DebounceFSM_update(void) {
  * @brief Returns the state of the button (pressed or not) and resets the internal flag.
  * @return true if the button was pressed, false otherwise.
  */
-bool_t ReadKey(void) {
-    if (buttonPressedFlag) {
+bool_t ReadKey(void)
+{
+    if (buttonPressedFlag)
+    {
         buttonPressedFlag = false;
         return true;
     }
@@ -91,7 +104,8 @@ bool_t ReadKey(void) {
  * @brief Function called when the button is detected as pressed.
  * Turns on the associated LED.
  */
-static void ButtonPressed(void) {
+static void ButtonPressed(void)
+{
     BSP_LED_On(LED1);
 }
 
@@ -99,7 +113,8 @@ static void ButtonPressed(void) {
  * @brief Function called when the button is detected as released.
  * Turns off the associated LED.
  */
-static void ButtonReleased(void) {
+static void ButtonReleased(void)
+{
     BSP_LED_Off(LED1);
 }
 
@@ -107,9 +122,11 @@ static void ButtonReleased(void) {
  * @brief Handles errors in the debounce FSM.
  * Turns on an error LED and enters an infinite loop.
  */
-static void DebounceErrorHandler(void) {
+static void DebounceErrorHandler(void)
+{
     BSP_LED_On(LED3);
-    while (1) {
+    while (1)
+    {
         __NOP();
     }
 }
